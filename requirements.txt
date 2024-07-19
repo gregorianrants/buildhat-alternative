@@ -1,0 +1,9 @@
+colorzero==2.0
+gpiozero==2.0.1
+importlib-metadata==4.13.0
+importlib-resources==5.13.0
+lgpio==0.2.2.0
+pyserial==3.5
+python-dotenv==1.0.1
+sshkeyboard==2.3.1
+zipp==3.19.2
