@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "buildhat-alternative"
+version = "0.1.0"
+description = "alternative libray for raspberry pi buildhat for speed control of lego motors, overcomes some of the bugs of official library"
+authors = ["gregorianrants <gregorian_rants@hotmail.com>"]
+license = "MIT"
+
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pyserial="3.5"
+gpiozero="2.0.1"
+
+
+
+[tool.poetry.group.dev.dependencies]
+sshkeyboard = "^2.3.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

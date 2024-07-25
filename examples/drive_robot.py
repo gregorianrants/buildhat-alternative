@@ -1,6 +1,6 @@
-from buildhat.buildhat import BuildHat
-from buildhat.motor import Motor
-from buildhat.robot import Robot
+from buildhat_alternative.buildhat import BuildHat
+from buildhat_alternative.motor import Motor
+from buildhat_alternative.robot import Robot
 import time
 import signal
 import sys
