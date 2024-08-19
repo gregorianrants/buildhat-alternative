@@ -5,6 +5,7 @@ import time
 import signal
 import sys
 from sshkeyboard import listen_keyboard
+import math
 
 print('dont press anything yet we will let you know when we are ready to rock.....')
 
@@ -34,6 +35,10 @@ with (
                 robot.left()
             if key == "x":
                 robot.right()
+            if key =='a':
+                robot.set_velocities(300,math.pi/4)
+            if key =='s':
+                robot.set_velocities(300,-math.pi/4)
             if key == "space":
                 robot.pause()
 
