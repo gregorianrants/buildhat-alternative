@@ -1,6 +1,10 @@
 import time
 
 DISTANCE_BETWEEN_WHEELS= 176
+WHEEL_DIAMETER = 276.4601
+
+def mm_to_degrees(mm):
+    return mm/WHEEL_DIAMETER*360
 
 class Robot():
     def __init__(self,left_motor,right_motor):
@@ -14,8 +18,8 @@ class Robot():
     
     def set_velocities(self,translational,rotational):
         v_left,v_right = self.get_velocities(translational,rotational) 
-        self.left_motor.run(v_left)
-        self.right_motor.run(v_right)
+        self.left_motor.run(mm_to_degrees(v_left))
+        self.right_motor.run(mm_to_degrees(v_right))
   
     def forward(self,speed=500):
         self.pause()
