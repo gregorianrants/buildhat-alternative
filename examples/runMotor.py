@@ -17,8 +17,8 @@ with (
         
         #you can add a callback function that will be passed the data that is output from the motor i.e. 
         # the encoder readings,  
-        # the motor outputs data pretty quick note teh output_data_rate parameter above when setting up
-        # motor this controls the interval callback is called at in seconds.
+        # the motor outputs data pretty quick. note the output_data_rate (its in Hz) parameter above when setting up
+        # output data rate must be 100hz or bellow.
         
         left_motor.add_listener(print)
         

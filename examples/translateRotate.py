@@ -17,7 +17,10 @@ with (
     try:
         robot = Robot(left_motor, right_motor)
         
+        #make a left turn
         robot.set_velocities(translational=300,rotational=math.pi/4)
+        time.sleep(10)
+        robot.pause()
         
     except KeyboardInterrupt:
         print("you pressed control c")
