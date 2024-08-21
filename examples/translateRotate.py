@@ -17,7 +17,7 @@ with (
     try:
         robot = Robot(left_motor, right_motor)
         
-        robot.set_velocities(translational=)
+        robot.set_velocities(translational=300,rotational=math.pi/4)
         
     except KeyboardInterrupt:
         print("you pressed control c")
