@@ -5,16 +5,35 @@ import time
 
 class DataEmitter:
     def __init__(self, in_rate, out_rate, formatter):
+        if out_rate > in_rate:
+            raise ValueError("output rate can not be greater than input rate")
+        if in_rate % out_rate != 0:
+            raise ValueError(
+                f"input rate :{in_rate}, divided by output rate: {out_rate} must result in whole number"
+            )
+        if type(in_rate) != int or type(out_rate) != int:
+            raise ValueError("in_rate and out rate must be integers")
         self.in_rate = in_rate
         self.out_rate = out_rate
         self.count_to_handle_data_on = self.in_rate / self.out_rate
         self.counter = 0
         self.handler = None
         self.formatter = formatter
+        self.unique_id = 0
+        self.ids = []
         self.handlers = []
 
     def add_handler(self, handler):
+        handler_id = self.unique_id
+        self.unique_id += 1
+        self.ids.append(handler_id)
         self.handlers.append(handler)
+        return handler_id
+
+    def remove_listener(self, id):
+        i = self.ids.index(id)
+        self.ids = [item for idx, item in enumerate(self.ids) if idx != id]
+        self.handlers = [item for idx, item in enumerate(self.handlers) if idx != id]
 
     def handleData(self, speed, pos, apos):
         if self.counter == 0:
@@ -41,12 +60,12 @@ class Motor:
         # self.PIDcontroller = PIDController(0.001,0,0.02)
         self.PIDcontroller = PIDController(0.00076, 0.003, 0.0153)
         self.speed = 0
-        self.selrate = 10
+        self.selrate = 10  # number of milliseconds between data emissions by the buildhat over serial.
         self.ser.add_motor(self)
         self.set_combi_mode()
         self.set_plimit()
 
-        self.received_data_rate = 1000 / self.selrate
+        self.received_data_rate = 1000 // self.selrate  # convert to Hz
         self.data_emitter = DataEmitter(
             in_rate=self.received_data_rate,
             out_rate=output_data_rate,
@@ -109,7 +128,9 @@ class Motor:
         # we are converting the speed output by the build hat which is in 10 degrees per second
         # yes you read that right i said "10"
         # to degrees per second.
-        self.data_emitter.handleData(speed, pos, apos)
+        self.data_emitter.handleData(
+            speed * self.direction, pos * self.direction, apos * self.direction
+        )
         speed = self.direction * speed * 10
         self.update(speed)
 
@@ -138,11 +159,11 @@ class Motor:
 
     def add_listener(self, listener):
         """not fully implemented here as an idea only"""
-        self.data_emitter.add_handler(listener)
+        return self.data_emitter.add_handler(listener)
 
-    def remove_listener(self):
+    def remove_listener(self, id):
         """not fully implemented here as an idea only"""
-        pass
+        self.data_emitter.remove_listener(id)
 
     def dc(self, duty=0.2):
         """using this method will switch to controlling power via pwm directly
