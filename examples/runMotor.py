@@ -31,7 +31,8 @@ with (
 
         counter = 0
         start_time = time.time()
-
+        #it is important that we wait till the motor as started emitting data before we start setting its 
+        # #speed otherwise it causes the pid to ramp up to quickly
         while True:
             msg = q.get()
             print(msg)

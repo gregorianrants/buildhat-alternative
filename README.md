@@ -72,27 +72,46 @@ import sys
 from sshkeyboard import listen_keyboard
 import math
 
-print('dont press anything yet we will let you know when we are ready to rock.....')
+from queue import Queue
+
+
+print("dont press anything yet we will let you know when we are ready to rock.....")
+
+
+q = Queue()
 
 with (
-BuildHat() as buildhat,
-Motor(port="C", ser=buildhat, direction=-1,output_data_rate=1) as left_motor,
+    BuildHat() as buildhat,
+    Motor(port="C", ser=buildhat, direction=-1, output_data_rate=1) as left_motor,
 ):
-try:
+    try:
 
-        #you can add a callback function that will be passed the data that is output from the motor i.e.
+        # you can add a callback function that will be passed the data that is output from the motor i.e.
         # the encoder readings,
         # the motor outputs data pretty quick. note the output_data_rate (its in Hz) parameter above when setting up
         # output data rate must be 100hz or bellow.
 
         left_motor.add_listener(print)
+        left_motor.add_listener(q.put)
 
-        left_motor.run(degrees_per_second=360)
-        time.sleep(5)
+        counter = 0
+        start_time = time.time()
+        #it is important that we wait till the motor as started emitting data before we start setting its 
+        # #speed otherwise it causes the pid to ramp up to quickly
+        while True:
+            msg = q.get()
+            print(msg)
+            if counter == 5:
+                left_motor.run(degrees_per_second=200)
+            if time.time() - start_time > 10000:
+                break
+            counter += 1
+
         left_motor.run(0)
 
     except KeyboardInterrupt:
         print("you pressed control c")
+
 
 ```
 
@@ -108,7 +127,13 @@ import sys
 from sshkeyboard import listen_keyboard
 import math
 
-print('dont press anything yet we will let you know when we are ready to rock.....')
+from queue import Queue
+
+print("dont press anything yet we will let you know when we are ready to rock.....")
+
+q = Queue()
+counter = 0
+
 
 with (
     BuildHat() as buildhat,
@@ -116,15 +141,12 @@ with (
     Motor("D", buildhat, 1) as right_motor,
 ):
     try:
+        left_motor.add_listener(q.put)
         left_motor.add_listener(print)
+        # prints something like:
+        # {'port': 'C', 'target_speed_deg/sec': 0, 'speed_deg/sec': 0, 'speed_mm/s': 0.0, 'pos': 2721, 'apos': 172, 'time': 1728570811.8964775}
+
         robot = Robot(left_motor, right_motor)
-
-        print('ready to rock')
-        print('keys are:')
-        print('k=forward m=back z=left x=right')
-        print('press SPACE TO STOP')
-
-
 
         def press(key):
             print(f"'{key}' pressed")
@@ -136,22 +158,42 @@ with (
                 robot.left()
             if key == "x":
                 robot.right()
-            if key =='a':
-                robot.set_velocities(300,math.pi/4)
-            if key =='s':
-                robot.set_velocities(300,-math.pi/4)
+            if key == "a":
+                robot.set_velocities(300, math.pi / 4)
+            if key == "s":
+                robot.set_velocities(300, -math.pi / 4)
             if key == "space":
                 robot.pause()
 
         def release(key):
             print(f"'{key}' released")
 
+        # data event loop
+        # listen for 5 data events before continuing this is to make sure everything is initialized
+        while True:
+            msg = q.get()
+            # this message just has the same data that we are printing.
+            if counter == 5:
+                break
+
+            counter += 1
+
+        # because listen keyboard blocks we break out the loop before initializing, if we needed to do more stuff in the loop above
+        # we could start listen keyboard in a thread, since this is just a demo i haven't overcomplicated it.
+
+        print("ready to rock")
+        print("keys are:")
+        print("k=forward m=back z=left x=right")
+        print("press SPACE TO STOP")
+
         listen_keyboard(
             on_press=press,
             on_release=release,
         )
+
     except KeyboardInterrupt:
         print("you pressed control c")
+
 
 
 ```
@@ -163,12 +205,13 @@ from buildhat_alternative.buildhat import BuildHat
 from buildhat_alternative.motor import Motor
 from buildhat_alternative.robot import Robot
 import time
-import signal
-import sys
-from sshkeyboard import listen_keyboard
 import math
 
-print('dont press anything yet we will let you know when we are ready to rock.....')
+from queue import Queue
+
+q = Queue()
+
+print("dont press anything yet we will let you know when we are ready to rock.....")
 
 with (
     BuildHat() as buildhat,
@@ -178,8 +221,23 @@ with (
     try:
         robot = Robot(left_motor, right_motor)
 
-        #make a left turn
-        robot.set_velocities(translational=300,rotational=math.pi/4)
+        left_motor.add_listener(q.put)
+        counter = 0
+        start_time = None
+        #it is important that we wait till the motor as started emitting data before we start setting its 
+        # #speed otherwise it causes the pid to ramp up to quickly
+        while True:
+            msg = q.get()
+            print(msg)
+            if counter == 5:
+                robot.set_velocities(translational=300, rotational=math.pi / 4)
+                start_time = time.time()
+            counter += 1
+            if start_time and time.time() - start_time < 5000:
+                break
+
+        # make a left turn
+
         time.sleep(10)
         robot.pause()
 

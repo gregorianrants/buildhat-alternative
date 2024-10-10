@@ -21,6 +21,8 @@ with (
         left_motor.add_listener(q.put)
         counter = 0
         start_time = None
+        #it is important that we wait till the motor as started emitting data before we start setting its 
+        # #speed otherwise it causes the pid to ramp up to quickly
         while True:
             msg = q.get()
             print(msg)
